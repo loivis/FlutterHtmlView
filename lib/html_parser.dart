@@ -10,8 +10,8 @@ import 'package:video_player/video_player.dart';
 class HtmlParser {
   HtmlParser();
 
-  _parseChildren(e, widgetList) {
-    print(e);
+  _parseChildren(dom.Element e, String p, widgetList) {
+    print("new element in parent $p:\n$e");
     if (e.localName == "img" && e.attributes.containsKey('src')) {
       var src = e.attributes['src'];
 
@@ -37,15 +37,19 @@ class HtmlParser {
               new AspectRatioVideo(controller),
         ),
       );
-    } else if (!e.outerHtml.contains("<img") ||
-        !e.outerHtml.contains("<video") ||
-        !e.hasContent()) {
-      print(e.outerHtml);
-      widgetList.add(new HtmlText(data: e.outerHtml));
+    } else if (!_isPhrasingContentInP(e.localName, p)) {
+      RegExp exp = new RegExp('(<img.*?>|<video.*></video>)');
+      dom.Element n = parse(e.outerHtml.replaceAll(exp, '')).body.firstChild;
+      if (n.hasContent()) {
+        print('add element:\n ${n.outerHtml}');
+        widgetList.add(new HtmlText(data: n.outerHtml));
+      }
     }
 
-    if (e.children.length > 0)
-      e.children.forEach((e) => _parseChildren(e, widgetList));
+    if (e.children.length > 0) {
+      var p = e.localName;
+      e.children.forEach((e) => _parseChildren(e, p, widgetList));
+    }
   }
 
   List<Widget> HParse(String html) {
@@ -70,8 +74,75 @@ class HtmlParser {
 
     List<dom.Element> docBodyChildren = docBody.children;
     if (docBodyChildren.length > 0)
-      docBodyChildren.forEach((e) => _parseChildren(e, widgetList));
+      docBodyChildren.forEach((e) => _parseChildren(e, null, widgetList));
 
     return widgetList;
+  }
+
+  bool _isPhrasingContentInP(element, p) {
+    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
+    // img and video excluded
+    List<String> elements = <String>[
+      'abbr',
+      'audio',
+      'b',
+      'bdo',
+      'br',
+      'button',
+      'canvas',
+      'cite',
+      'code',
+      'data',
+      'datalist',
+      'dfn',
+      'em',
+      'embed',
+      'i',
+      'iframe',
+      'input',
+      'kbd',
+      'label',
+      'mark',
+      'math',
+      'meter',
+      'noscript',
+      'object',
+      'output',
+      'progress',
+      'q',
+      'ruby',
+      'samp',
+      'script',
+      'select',
+      'small',
+      'span',
+      'strong',
+      'sub',
+      'sup',
+      'svg',
+      'textarea',
+      'time',
+      'var',
+      'wbr',
+      'a',
+      'area',
+      'del',
+      'ins',
+      'link',
+      'map',
+      'meta',
+    ];
+    if (elements.contains(element) && p == 'p') {
+      return true;
+    }
+    // TODO: A few other elements belong to this category, but only if a specific condition is fulfilled:
+    // <a>, if it contains only phrasing content
+    // <area>, if it is a descendant of a <map> element
+    // <del>, if it contains only phrasing content
+    // <ins>, if it contains only phrasing content
+    // <link>, if the itemprop attribute is present
+    // <map>, if it contains only phrasing content
+    // <meta>, if the itemprop attribute is present
+    return false;
   }
 }
