@@ -38,7 +38,7 @@ class HtmlParser {
               new AspectRatioVideo(controller),
         ),
       );
-    } else if (!_isPhrasingContentInP(e.localName, p)) {
+    } else if (!_isInsidePhrasingContent(e.localName, p)) {
       RegExp exp = new RegExp('(<img.*?>|<video.*></video>)');
       dom.Element n = parse(e.outerHtml.replaceAll(exp, '')).body.firstChild;
       if (n.hasContent()) {
@@ -80,7 +80,7 @@ class HtmlParser {
     return widgetList;
   }
 
-  bool _isPhrasingContentInP(element, p) {
+  bool _isInsidePhrasingContent(element, parent) {
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
     // img and video excluded
     List<String> elements = <String>[
@@ -133,7 +133,8 @@ class HtmlParser {
       'map',
       'meta',
     ];
-    if (elements.contains(element) && p == 'p') {
+    List<String> parents = new List.from(elements)..add('p');
+    if (elements.contains(element) && parents.contains(parent)) {
       return true;
     }
     // TODO: A few other elements belong to this category, but only if a specific condition is fulfilled:
