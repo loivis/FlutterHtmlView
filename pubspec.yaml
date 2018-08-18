@@ -8,10 +8,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_custom_tabs: "^0.1.0"
+  flutter_custom_tabs:
+    git: https://github.com/droibit/flutter_custom_tabs
   html: "^0.13.3"
-  cached_network_image: "^0.4.0"
-  video_player: "^0.5.2"
+  cached_network_image:
+    git:
+      url: git://github.com/loivis/flutter_cached_network_image
+      ref: fork
+  video_player: "^0.6.4"
 
 
 environment:
