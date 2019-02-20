@@ -17,7 +17,8 @@ class HtmlParser {
 
       if (src.startsWith("http") || src.startsWith("https")) {
         widgetList.add(new CachedNetworkImage(
-          placeholder: new Center(child: CircularProgressIndicator()),
+          placeholder: (context, url) =>
+              Center(child: CircularProgressIndicator()),
           imageUrl: src,
           fit: BoxFit.cover,
         ));
